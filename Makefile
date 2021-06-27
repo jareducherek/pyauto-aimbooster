@@ -7,5 +7,3 @@ create_environment:
 
 requirements:
 	pip install -r requirements.txt
-	python -m ipykernel install --user
-	python -m ipykernel install --user --name $(PROJECT_NAME) --display-name "$(PROJECT_NAME)"
