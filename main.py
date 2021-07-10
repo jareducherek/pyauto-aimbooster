@@ -5,11 +5,13 @@ import win32api, win32con
 import numpy as np
 import keyboard
 
-from target_finder import target_finder_frame_diff, target_finder
+from target_finder import target_finder_difference, target_finder_naive
 
 #pause functions
 is_paused = True
 located = False
+
+find_loc = target_finder_naive
 
 def click(x, y):
     win32api.SetCursorPos((x,y))
@@ -26,15 +28,14 @@ if __name__ == "__main__":
         time.sleep(0.1)
 
     print('starting!')
-    prev_frame = np.array(pyautogui.screenshot(region=region))
+    prev_frame = cv2.cvtColor(np.array(pyautogui.screenshot(region=region)), cv2.COLOR_RGB2GRAY)
     time.sleep(0.1)
     while keyboard.is_pressed('q') == False:
-        cur_frame = np.array(pyautogui.screenshot(region=region))
-        pairs = target_finder(cur_frame)
+        cur_frame = cv2.cvtColor(np.array(pyautogui.screenshot(region=region)), cv2.COLOR_RGB2GRAY)
+        pairs = find_loc(cur_frame)
         if pairs is not None:
             for pair in pairs:
                 x, y = pair
                 click(x+region[0],y+region[1])
-                #pyautogui.click(x=x+region[0], y=y+region[1])
-        #prev_frame = cur_frame
+        prev_frame = cur_frame
 
