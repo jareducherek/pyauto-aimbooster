@@ -1,11 +1,13 @@
 import cv2
 import numpy as np
+from scipy import ndimage
 import time
 import pyautogui
 import config
 
 target_color = (255, 219, 195)
 target_gray_color = 227
+img_width = config.game_window[2]
 
 def target_finder_naive(cur):
     """
@@ -36,6 +38,15 @@ def target_finder_difference(prev, cur):
 
     return [(x, y)]
 
+def target_finder_islands(cur):
+    cur[cur != target_gray_color] = 0
+    labeled_array, num_features = ndimage.label(cur)
+
+    temp = []
+    for val in range(1, num_features+1):
+        loc = np.argmax(labeled_array == val)
+        temp += [(loc % img_width, loc // img_width)]
+    return temp
 
 def find_colors():
     #grayscale color of center of target: 227
@@ -71,9 +82,13 @@ def test_differencing():
     prev = cv2.cvtColor(cv2.imread('images/prev_sample.png'), cv2.COLOR_BGR2GRAY)
     cur = cv2.cvtColor(cv2.imread('images/cur_sample.png'), cv2.COLOR_BGR2GRAY)
     prev[prev != target_gray_color] = 0
-    cur[cur != target_gray_color] = 0
-    prev[(prev - cur) <= 0] = 0
-    cv2.imshow('diffed image', prev)
+    labeled_array, num_features = ndimage.label(prev, np.ones((3,3)))
+    labeled_array = labeled_array.astype('uint8') * 20
+    print(num_features)
+    #cur[cur != target_gray_color] = 0
+    #prev[(prev - cur) <= 0] = 0
+    print(np.unique(labeled_array))
+    cv2.imshow('diffed image', labeled_array)
     cv2.waitKey(0)
 
 if __name__ == "__main__":
